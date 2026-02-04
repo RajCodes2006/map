@@ -1,0 +1,72 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Navigation, Clock, TrendingUp, Route } from "lucide-react";
+
+export default function RouteDisplay({ coordinates, distance, duration }) {
+  const displayDistance = distance 
+    ? distance >= 1000 
+      ? `${(distance / 1000).toFixed(2)} km`
+      : `${Math.round(distance)} m`
+    : `${calculateStraightDistance()} m`;
+
+  const displayDuration = duration 
+    ? `${Math.ceil(duration / 60)} min`
+    : `~${estimateTime()} min`;
+
+  function calculateStraightDistance() {
+    if (coordinates.length < 2) return 0;
+    
+    const [lat1, lon1] = coordinates[0];
+    const [lat2, lon2] = coordinates[coordinates.length - 1];
+    
+    const R = 6371; // Radius of Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distanceKm = R * c;
+    
+    return Math.round(distanceKm * 1000); // Convert to meters
+  }
+
+  function estimateTime() {
+    const dist = calculateStraightDistance();
+    const walkingSpeed = 5; // km/h
+    const timeInMinutes = (dist / 1000) / walkingSpeed * 60;
+    return Math.ceil(timeInMinutes);
+  }
+
+  return (
+    <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+      <div className="flex items-center gap-2 mb-3">
+        <Route className="w-5 h-5 text-purple-600" />
+        <span className="font-semibold text-gray-900">Route Information</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <p className="text-xs text-gray-500">Distance</p>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{displayDistance}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-purple-600" />
+            <p className="text-xs text-gray-500">Walking Time</p>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{displayDuration}</p>
+        </div>
+      </div>
+      <div className="mt-3 p-2 bg-purple-600 text-white rounded-lg text-center">
+        <p className="text-xs font-medium">
+          🚶 Follow the purple line on map for turn-by-turn directions
+        </p>
+      </div>
+    </div>
+  );
+}
