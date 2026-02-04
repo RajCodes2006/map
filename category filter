@@ -1,0 +1,44 @@
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+const categories = [
+  { value: "all", label: "All Locations", icon: "📍" },
+  { value: "academic", label: "Academic", icon: "📚" },
+  { value: "hostel", label: "Hostels", icon: "🏠" },
+  { value: "cafeteria", label: "Food", icon: "🍽️" },
+  { value: "library", label: "Libraries", icon: "📖" },
+  { value: "sports", label: "Sports", icon: "⚽" },
+  { value: "shop", label: "Shops", icon: "🛍️" },
+  { value: "atm", label: "ATM", icon: "💳" },
+  { value: "stationary", label: "Stationary", icon: "📝" },
+  { value: "medical", label: "Medical", icon: "⚕️" },
+  { value: "admin", label: "Admin", icon: "🏛️" },
+  { value: "entrance", label: "Entrances", icon: "🚪" }
+];
+
+export default function CategoryFilter({ selectedCategory, onCategoryChange }) {
+  return (
+    <div>
+      <h3 className="font-semibold text-gray-900 mb-3">Filter by Category</h3>
+      <div className="flex flex-wrap gap-2">
+        {categories.map((category) => (
+          <Button
+            key={category.value}
+            variant={selectedCategory === category.value ? "default" : "outline"}
+            size="sm"
+            className={`transition-all ${
+              selectedCategory === category.value
+                ? "bg-purple-600 hover:bg-purple-700 shadow-md"
+                : "hover:bg-purple-50 hover:border-purple-300"
+            }`}
+            onClick={() => onCategoryChange(category.value)}
+          >
+            <span className="mr-1.5">{category.icon}</span>
+            {category.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
