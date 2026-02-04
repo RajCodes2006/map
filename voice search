@@ -1,0 +1,72 @@
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mic, MicOff, X, Volume2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function VoiceSearch({ locations, onLocationSelect, onClose }) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [recognition, setRecognition] = useState(null);
+  const [isSupported, setIsSupported] = useState(true);
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = 'en-US';
+
+      recognitionInstance.onresult = (event) => {
+        const current = event.resultIndex;
+        const transcriptText = event.results[current][0].transcript;
+        setTranscript(transcriptText);
+
+        if (event.results[current].isFinal) {
+          findLocation(transcriptText);
+        }
+      };
+
+      recognitionInstance.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+    } else {
+      setIsSupported(false);
+    }
+  }, []);
+
+  const startListening = () => {
+    if (recognition) {
+      setTranscript("");
+      recognition.start();
+      setIsListening(true);
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition) {
+      recognition.stop();
+      setIsListening(false);
+    }
+  };
+
+  const findLocation = (query) => {
+    const lowerQuery = query.toLowerCase();
+    const found = locations.find(loc =>
+      loc.name.toLowerCase().includes(lowerQuery) ||
+      loc.block_number?.toLowerCase().includes(lowerQuery) ||
+      loc.category.toLowerCase().includes(lowerQuery)
+    );
+
+    if (found) {
+      onLocationSelect(found);
+      onClose();
+ 
