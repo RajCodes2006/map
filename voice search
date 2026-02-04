@@ -69,4 +69,129 @@ export default function VoiceSearch({ locations, onLocationSelect, onClose }) {
     if (found) {
       onLocationSelect(found);
       onClose();
- 
+    } else {
+      setTranscript(`No location found for "${query}". Try again.`);
+      setTimeout(() => setTranscript(""), 2000);
+    }
+  };
+
+  if (!isSupported) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex: 9999 }}
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Card className="w-full max-w-md shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
+                <CardTitle>Voice Search Not Available</CardTitle>
+                <Button variant="ghost" size="icon" onClick={onClose}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Voice search is not supported in your browser. Please try using Chrome or Edge.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        style={{ zIndex: 9999 }}
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-md"
+        >
+          <Card className="shadow-2xl border-2 border-purple-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 bg-gradient-to-r from-purple-50 to-indigo-50">
+              <CardTitle className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5 text-purple-600" />
+                Voice Navigation
+              </CardTitle>
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="w-4 h-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-6 p-6">
+              <div className="text-center">
+                <div className="mb-6">
+                  <Button
+                    size="lg"
+                    onClick={isListening ? stopListening : startListening}
+                    className={`w-24 h-24 rounded-full transition-all ${
+                      isListening
+                        ? "bg-red-500 hover:bg-red-600 animate-pulse scale-110"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    }`}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-10 h-10" />
+                    ) : (
+                      <Mic className="w-10 h-10" />
+                    )}
+                  </Button>
+                </div>
+
+                {isListening ? (
+                  <div className="space-y-2">
+                    <p className="text-lg font-medium text-gray-900">Listening...</p>
+                    <p className="text-sm text-gray-500">Say the location name</p>
+                    <div className="flex justify-center gap-1 mt-4">
+                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-lg font-medium text-gray-900">Tap to speak</p>
+                    <p className="text-sm text-gray-500">Try: "Block A", "Library", or "Food Court"</p>
+                  </div>
+                )}
+
+                {transcript && (
+                  <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm text-gray-600 mb-1">You said:</p>
+                    <p className="font-medium text-purple-900">{transcript}</p>
+                  </div>
+                )}
+
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-900">
+                    💡 <strong>Tip:</strong> Speak clearly and say the full location name for best results
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
