@@ -1,0 +1,72 @@
+import React, { useState } from "react";
+import { User } from "@/entities/User";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { MapPin, Search, Loader2 } from "lucide-react";
+
+export default function SetLocationDialog({ locations, onClose, onLocationSet }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  const filteredLocations = locations.filter(loc =>
+    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.block_number?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSelectLocation = async (location) => {
+    setIsSelecting(true);
+    try {
+      await User.updateMyUserData({ 
+        current_location: location.name,
+        current_latitude: location.latitude,
+        current_longitude: location.longitude
+      });
+      onLocationSet(location);
+      onClose();
+    } catch (error) {
+      console.error("Error setting location:", error);
+      alert("Failed to set location. Please try again.");
+    } finally {
+      setIsSelecting(false);
+    }
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-md max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-purple-600" />
+            Set My Current Location
+          </DialogTitle>
+          <DialogDescription>
+            Where are you on campus right now?
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search your location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+              disabled={isSelecting}
+            />
+          </div>
+
+          <div className="max-h-[400px] overflow-y-auto space-y-2">
+            {filteredLocations.map((location) => (
+              <button
+                key={location.id}
+                onClick={() => handleSelectLocation(location)}
+ 
