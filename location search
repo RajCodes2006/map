@@ -1,0 +1,92 @@
+import React, { useState, useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+
+export default function LocationSearch({ locations, onLocationSelect }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredLocations = locations.filter(loc =>
+    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.block_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSelect = (location) => {
+    onLocationSelect(location);
+    setSearchQuery("");
+    setShowResults(false);
+  };
+
+  return (
+    <div className="relative" ref={searchRef}>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Input
+          placeholder="Search campus locations..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowResults(true);
+          }}
+          onFocus={() => setShowResults(true)}
+          className="pl-10 pr-10"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setShowResults(false);
+            }}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {showResults && searchQuery && (
+        <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-auto z-50">
+          {filteredLocations.length > 0 ? (
+            <div className="p-2">
+              {filteredLocations.map((location) => (
+                <button
+                  key={location.id}
+                  onClick={() => handleSelect(location)}
+                  className="w-full text-left px-3 py-3 hover:bg-purple-50 rounded-lg transition-colors"
+                >
+                  <p className="font-medium text-gray-900">{location.name}</p>
+                  <p className="text-xs text-gray-500 capitalize mt-1">
+                    {location.category} {location.block_number && `• Block ${location.block_number}`}
+                  </p>
+                  {location.description && (
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{location.description}</p>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center text-gray-500">
+              <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No locations found</p>
+              <p className="text-xs mt-1">Try searching for a different location</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
